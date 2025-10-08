@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOMANIS</title>
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --secondary: #f39c12;
+      --background: #f4f6f9;
+      --text: #2c3e50;
+      --light: #ffffff;
+      --accent: #e74c3c;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s;
+    }
+
+    header {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: var(--light);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+
+    #search {
+      padding: 0.5rem;
+      border: none;
+      border-radius: 20px;
+      width: 250px;
+      transition: box-shadow 0.3s;
+    }
+
+    #search:focus {
+      outline: none;
+      box-shadow: 0 0 8px var(--secondary);
+    }
+
+    #main {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      transition: 0.3s;
+    }
+
+    #sidebar {
+      width: 25%;
+      background: var(--light);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+      transition: transform 0.3s;
+    }
+
+    #sidebar h2 {
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #article-list button {
+      background: var(--secondary);
+      border: none;
+      color: white;
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    #article-list button:hover {
+      background: var(--accent);
+      transform: scale(1.03);
+    }
+
+    #content {
+      flex: 1;
+      background: var(--light);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      animation: fadeIn 0.5s;
+    }
+
+    #editor {
+      display: none;
+      animation: slideIn 0.4s ease;
+    }
+
+    #article-title, #article-content {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      transition: border 0.3s;
+    }
+
+    #article-title:focus, #article-content:focus {
+      border: 1px solid var(--secondary);
+      outline: none;
+      box-shadow: 0 0 5px var(--secondary);
+    }
+
+    button {
+      padding: 10px 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    #editor-status {
+      background: var(--accent);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      margin-left: 10px;
+      display: none;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      color: var(--light);
+      margin-top: 30px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--secondary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+
+    #login-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 100;
+    }
+
+    #login-panel input {
+      padding: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 99;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 onclick="scrollToTop()">WOMANIS</h1>
+    <input type="text" id="search" placeholder="🔍 Cari artikel...">
+    <div id="editor-controls">
+      <button id="loginBtn" onclick="openLogin()">🔑 Login Editor</button>
+      <button id="logoutBtn" style="display:none;" onclick="logoutEditor()">🚪 Logout</button>
+      <span id="editor-status">Mode Editor Aktif ✍️</span>
+    </div>
+  </header>
+
+  <div id="main">
+    <aside id="sidebar">
+      <h2>Artikel 📚</h2>
+      <div id="article-list"></div>
+      <button id="newArticleBtn" onclick="newArticle()" style="display:none;">+ Artikel Baru ✨</button>
+    </aside>
+
+    <section id="content">
+      <div id="viewer">
+        <h2>Selamat Datang 👋</h2>
+        <p>Pilih artikel di samping atau login sebagai editor untuk membuat artikel baru.</p>
+      </div>
+
+      <div id="editor">
+        <h2>Edit Artikel ✍️</h2>
+        <input type="text" id="article-title" placeholder="Judul Artikel">
+        <textarea id="article-content" placeholder="Tulis isi artikel di sini..." rows="10"></textarea>
+        <button onclick="saveArticle()">💾 Simpan</button>
+        <button onclick="cancelEdit()">❌ Batal</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    &copy; 2025 WOMANIS - Dibuat dengan tangisan
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="overlay" onclick="closeLogin()"></div>
+  <div id="login-panel">
+    <h3>Login Editor</h3>
+    <input type="password" id="passwordInput" placeholder="Masukkan kata sandi">
+    <button onclick="checkPassword()">Masuk</button>
+    <button onclick="closeLogin()">Batal</button>
+  </div>
+
+  <script>
+    const editorPassword = "admin123"; // ubah password sesuai keinginan
+    let isEditor = false;
+
+    let articles = JSON.parse(localStorage.getItem('wikiArticles')) || [
+      { title: 'Sejarah Indonesia', content: 'Indonesia memiliki sejarah panjang sejak zaman kerajaan Nusantara.' },
+      { title: 'Pancasila', content: 'Pancasila adalah dasar negara Indonesia yang terdiri dari lima sila.' }
+    ];
+
+    const listEl = document.getElementById('article-list');
+    const viewer = document.getElementById('viewer');
+    const editor = document.getElementById('editor');
+    const titleInput = document.getElementById('article-title');
+    const contentInput = document.getElementById('article-content');
+    const searchInput = document.getElementById('search');
+    const toast = document.getElementById('toast');
+    const editorStatus = document.getElementById('editor-status');
+
+    function renderList(filter = '') {
+      listEl.innerHTML = '';
+      articles
+        .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(a => {
+          const btn = document.createElement('button');
+          btn.textContent = a.title;
+          btn.onclick = () => viewArticle(a.title);
+          listEl.appendChild(btn);
+        });
+    }
+
+    function viewArticle(title) {
+      const article = articles.find(a => a.title === title);
+      if (article) {
+        viewer.innerHTML = `
+          <h2>${article.title}</h2>
+          <p>${article.content}</p>
+          ${isEditor ? `<button onclick=\"editArticle('${article.title}')\">✏️ Edit</button><button onclick=\"deleteArticle('${article.title}')\">🗑️ Hapus</button>` : ''}
+        `;
+        viewer.style.display = 'block';
+        editor.style.display = 'none';
+        showToast(`📖 Membuka artikel: ${article.title}`);
+      }
+    }
+
+    function newArticle() {
+      if (!isEditor) return;
+      titleInput.value = '';
+      contentInput.value = '';
+      viewer.style.display = 'none';
+      editor.style.display = 'block';
+    }
+
+    function editArticle(title) {
+      const article = articles.find(a => a.title === title);
+      if (article) {
+        titleInput.value = article.title;
+        contentInput.value = article.content;
+        viewer.style.display = 'none';
+        editor.style.display = 'block';
+      }
+    }
+
+    function saveArticle() {
+      const title = titleInput.value.trim();
+      const content = contentInput.value.trim();
+      if (!title || !content) return alert('Judul dan isi artikel wajib diisi.');
+      const existing = articles.find(a => a.title === title);
+      if (existing) {
+        existing.content = content;
+        showToast(`✅ Artikel "${title}" diperbarui`);
+      } else {
+        articles.push({ title, content });
+        showToast(`✨ Artikel "${title}" ditambahkan`);
+      }
+      localStorage.setItem('wikiArticles', JSON.stringify(articles));
+      renderList();
+      viewArticle(title);
+    }
+
+    function cancelEdit() {
+      viewer.style.display = 'block';
+      editor.style.display = 'none';
+    }
+
+    function deleteArticle(title) {
+      if (!isEditor) return;
+      if (confirm(`Yakin ingin menghapus artikel "${title}"?`)) {
+        articles = articles.filter(a => a.title !== title);
+        localStorage.setItem('wikiArticles', JSON.stringify(articles));
+        renderList();
+        viewer.innerHTML = `<h2>Artikel Dihapus ❌</h2><p>Artikel telah dihapus.</p>`;
+        showToast(`🗑️ Artikel "${title}" dihapus`);
+      }
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openLogin() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('login-panel').style.display = 'block';
+    }
+
+    function closeLogin() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('login-panel').style.display = 'none';
+    }
+
+    function checkPassword() {
+      const pass = document.getElementById('passwordInput').value;
+      if (pass === editorPassword) {
+        isEditor = true;
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        document.getElementById('newArticleBtn').style.display = 'block';
+        editorStatus.style.display = 'inline-block';
+        closeLogin();
+        showToast('✅ Login berhasil, Anda sekarang menjadi editor');
+      } else {
+        alert('❌ Kata sandi salah');
+      }
+    }
+
+    function logoutEditor() {
+      isEditor = false;
+      document.getElementById('loginBtn').style.display = 'inline-block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('newArticleBtn').style.display = 'none';
+      editorStatus.style.display = 'none';
+      showToast('🚪 Anda telah logout sebagai editor');
+    }
+
+    searchInput.addEventListener('input', e => renderList(e.target.value));
+
+    renderList();
+  </script>
+</body>
+</html>
